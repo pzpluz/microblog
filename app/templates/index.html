@@ -3,7 +3,12 @@
 {% block content %}
     {{ super() }}
 
-    <h1>Hello,{{ user.username }}!</h1>
+    {% if current_user.is_anonymous %}
+    <h1>Hello, stranger!</h1>
+    {% else %}
+    <h1>Hello, {{ current_user.username }}! Email: {{ current_user.email }}</h1>
+    {% endif %}
+
     {% for post in posts %}
         <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
     {% endfor %}
