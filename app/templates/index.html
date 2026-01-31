@@ -9,6 +9,18 @@
     <h1>Hello, {{ current_user.username }}! Email: {{ current_user.email }}</h1>
     {% endif %}
 
+    <p>
+        {{ form.post.label }}
+        <br>
+        {{ form.post }}
+        <br>
+        {% for error in form.post.errors %}
+            <span style="color:red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit() }}</p>
+
+
     {% for post in posts %}
         <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
     {% endfor %}
