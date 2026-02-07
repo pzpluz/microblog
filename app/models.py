@@ -5,6 +5,7 @@ from hashlib import md5
 from app import app, db, login
 import jwt
 from time import time
+from flask_babel import _
 
 
 @login.user_loader
@@ -40,7 +41,7 @@ class User(db.Model, UserMixin):
 
     @property
     def password(self):
-        raise AttributeError('password is not a readable attribute')
+        raise AttributeError(_('password is not a readable attribute'))
 
     @password.setter
     def password(self, password):
@@ -84,7 +85,7 @@ class User(db.Model, UserMixin):
         return User.query.get(id)
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return '<User {self.username}>'.format(self.username)
 
 
 class Post(db.Model):

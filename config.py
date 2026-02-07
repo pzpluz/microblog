@@ -1,7 +1,7 @@
 import os
 
 
-class DevelopmentConfig:
+class DevelopmentConfig(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you will never guess'
 
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:199716128@localhost/microblog'
@@ -16,8 +16,10 @@ class DevelopmentConfig:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 
+    LANGUAGES = ['en', 'zh']
 
-class TestingConfig:
+
+class TestingConfig(object):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     SERVER_NAME = 'localhost.test'
