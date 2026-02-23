@@ -18,6 +18,9 @@ class DevelopmentConfig(object):
 
     LANGUAGES = ['en', 'zh']
 
+    APP_ID = os.environ.get('APPID')
+    BD_TRANSLATOR_KEY = os.environ.get('BD_TRANSLATOR_KEY')
+
 
 class TestingConfig(object):
     TESTING = True

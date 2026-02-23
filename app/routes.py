@@ -1,14 +1,15 @@
 # 从 app 包中导入 app 对象 -> app = Flask(__name__)
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, g, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm
 from app.models import User, Post
 from app.email import send_password_reset_email
-from urllib.parse import urlparse
+from app.translate import translate
 from datetime import datetime
 from urllib.parse import urlparse
-from flask_babel import _
+from flask_babel import _, get_locale
+from guess_language import guess_language
 
 
 @app.before_request
@@ -16,6 +17,7 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
+    g.locale = 'zh' if str(get_locale()).startswith('zh') else str(get_locale())
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -23,8 +25,24 @@ def before_request():
 @login_required
 def index():
     form = PostForm()
+    # 支持中文/英文/日语/韩语/泰语/德语/法语/俄语/西班牙语
+    language_list = ['zh', 'en', 'ja', 'ko', 'th', 'de', 'fr', 'ru', 'es']
+
     if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
+        language = guess_language(form.post.data)
+
+        if language == 'UNKNOWN' or language not in language_list:
+            language = ''
+        elif language == 'ja':
+            language = 'jp'
+        elif language == 'ko':
+            language = 'kor'
+        elif language == 'fr':
+            language = 'fra'
+        elif language == 'es':
+            language = 'spa'
+
+        post = Post(body=form.post.data, author=current_user, language=language)
         db.session.add(post)
         db.session.commit()
         flash(_('Your post is now live!'))
@@ -177,3 +195,9 @@ def unfollow(username):
     db.session.commit()
     flash(_('You are not following %(username)s.', username=username))
     return redirect(url_for('user', username=username))
+
+
+@app.route('/translate', methods=['POST'])
+@login_required
+def translate_text():
+    return jsonify({'text': translate(request.form['text'], request.form['source_language'], request.form['dest_language'])})
