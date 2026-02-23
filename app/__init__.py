@@ -1,5 +1,4 @@
 from flask import Flask
-from flask import request
 from config import DevelopmentConfig
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -12,6 +11,7 @@ from flask_babel import Babel, lazy_gettext as _l
 
 
 app = Flask(__name__)
+
 app.config.from_object(DevelopmentConfig)
 
 db = SQLAlchemy(app)
@@ -20,7 +20,23 @@ login = LoginManager(app)
 mail = Mail(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
-babel = Babel(app)
+
+pymysql.install_as_MySQLdb()
+
+
+from app.errors import bp as errors_bp
+app.register_blueprint(errors_bp)
+print("✓ Errors blueprint registered")
+
+
+from app.auth import bp as auth_bp
+app.register_blueprint(auth_bp, url_prefix='/auth')
+print("✓ Auth blueprint registered")
+
+
+from app.main import bp as main_bp
+app.register_blueprint(main_bp)
+print("✓ Main blueprint registered")
 
 
 def get_locale():
@@ -28,12 +44,12 @@ def get_locale():
     return 'zh_CN'
 
 
-babel.init_app(app, locale_selector=get_locale)
+babel = Babel(app, locale_selector=get_locale)
 
-login.login_view = 'login'
+login.login_view = 'auth.login'
 login.login_message = _l('Please log in to access this page.')
 
-pymysql.install_as_MySQLdb()
 
 # 导入一个新模块 models, 用来定义数据库的结构
-from app import routes, models, errors
+from app import models
+from app.main import routes
