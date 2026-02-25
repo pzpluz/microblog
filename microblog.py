@@ -1,6 +1,11 @@
-from app import app, db
+from app import db, create_app
 from app.models import User, Post
-from app import cli
+from app.cli import register
+from config import DevelopmentConfig
+
+
+app = create_app(DevelopmentConfig)
+register(app)
 
 
 @app.shell_context_processor
@@ -9,4 +14,4 @@ def make_shell_context():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

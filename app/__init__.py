@@ -1,4 +1,7 @@
-from flask import Flask
+import os
+from logging.handlers import RotatingFileHandler
+import logging
+from flask import Flask, current_app, request
 from config import DevelopmentConfig
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -12,39 +15,60 @@ from flask_babel import Babel, lazy_gettext as _l
 
 app = Flask(__name__)
 
-app.config.from_object(DevelopmentConfig)
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-login = LoginManager(app)
-mail = Mail(app)
-bootstrap = Bootstrap(app)
-moment = Moment(app)
+db = SQLAlchemy()
+migrate = Migrate()
+login = LoginManager()
+mail = Mail()
+bootstrap = Bootstrap()
+moment = Moment()
+babel = Babel()
 
 pymysql.install_as_MySQLdb()
 
 
-from app.errors import bp as errors_bp
-app.register_blueprint(errors_bp)
-print("✓ Errors blueprint registered")
-
-
-from app.auth import bp as auth_bp
-app.register_blueprint(auth_bp, url_prefix='/auth')
-print("✓ Auth blueprint registered")
-
-
-from app.main import bp as main_bp
-app.register_blueprint(main_bp)
-print("✓ Main blueprint registered")
-
-
 def get_locale():
-    # return request.accept_languages.best_match(app.config['LANGUAGES'])
-    return 'zh_CN'
+    return request.accept_languages.best_match(current_app.config['LANGUAGES'])
 
 
-babel = Babel(app, locale_selector=get_locale)
+def create_app(config_class):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login.init_app(app)
+    mail.init_app(app)
+    bootstrap.init_app(app)
+    moment.init_app(app)
+    babel.init_app(app, locale_selector=get_locale)
+
+    from app.errors import bp as errors_bp
+    app.register_blueprint(errors_bp)
+    print("✓ Errors blueprint registered")
+
+    from app.auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    print("✓ Auth blueprint registered")
+
+    from app.main import bp as main_bp
+    app.register_blueprint(main_bp)
+    print("✓ Main blueprint registered")
+
+    if not app.debug and not app.testing:
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+        file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240, backupCount=10)
+        file_handler.setFormatter(
+            logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+        )
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('Microblog startup')
+
+    return app
+
 
 login.login_view = 'auth.login'
 login.login_message = _l('Please log in to access this page.')
@@ -52,4 +76,3 @@ login.login_message = _l('Please log in to access this page.')
 
 # 导入一个新模块 models, 用来定义数据库的结构
 from app import models
-from app.main import routes

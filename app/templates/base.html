@@ -11,7 +11,7 @@
 {% block scripts %}
     {{ super() }}
     {{ moment.include_moment() }}
-    {{ moment.lang(g.locale) }}
+    {{ moment.lang(g.moment_locale) }}
 
     <script>
         function translate(sourceElem, destElem, sourceLang, destLang) {

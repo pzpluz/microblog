@@ -16,7 +16,19 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
-    g.locale = 'zh' if str(get_locale()).startswith('zh') else str(get_locale())
+
+    if str(get_locale()).startswith('zh'):
+        g.moment_locale = 'zh-cn'
+        g.locale = 'zh'
+    elif str(get_locale()) == 'ja':
+        g.moment_locale = 'ja'
+        g.locale = 'jp'
+    elif str(get_locale()) == 'ko':
+        g.moment_locale = 'ko'
+        g.locale = 'kor'
+    else:
+        g.moment_locale = 'en'
+        g.locale = 'en'
 
 
 @bp.route('/', methods=['GET', 'POST'])

@@ -1,4 +1,16 @@
 import os
+from dotenv import load_dotenv
+
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+dotenv_path = os.path.join(basedir, '.env')
+
+
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+    print(f"✅ Loaded .env from {dotenv_path}")
+else:
+    print(f"❌ No .env file found at {dotenv_path}")
 
 
 class DevelopmentConfig(object):
@@ -18,7 +30,7 @@ class DevelopmentConfig(object):
 
     LANGUAGES = ['en', 'zh']
 
-    APP_ID = os.environ.get('APPID')
+    APPID = os.environ.get('APPID')
     BD_TRANSLATOR_KEY = os.environ.get('BD_TRANSLATOR_KEY')
 
 
@@ -26,9 +38,3 @@ class TestingConfig(object):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     SERVER_NAME = 'localhost.test'
-
-
-config = {
-    'development': DevelopmentConfig,
-    'testing': TestingConfig
-}

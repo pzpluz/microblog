@@ -1,22 +1,20 @@
 from datetime import datetime, timedelta
 import unittest
-from app import app, db
+from app import db, create_app
 from app.models import User, Post
+from config import TestingConfig
 
 
 class UserTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = app('testing')
-
+        self.app = create_app(TestingConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
-
         db.create_all()
 
     def tearDown(self):
         db.session.remove()
         db.drop_all()
-
         self.app_context.pop()
 
     def test_password_hashing(self):
